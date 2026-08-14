@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StatusBar,
@@ -11,9 +12,11 @@ import {
   View,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../auth/AuthContext';
 import { submitScan } from '../api/scans';
 import { getOrderDetail } from '../api/orders';
+import { useToast } from '../ui/Toast';
 
 const EVENT_TYPES = [
   { value: 'nhap_kho', label: 'Nhập kho' },
@@ -71,6 +74,8 @@ const badgeStyles = StyleSheet.create({
 /* ─── Màn hình QUÉT MÃ chính ─── */
 export function ScanScreen({ navigation }) {
   const { user, logout } = useAuth();
+  const toast = useToast();
+  const insets = useSafeAreaInsets();
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraActive, setCameraActive] = useState(true);
   const [manualCode, setManualCode] = useState('');
@@ -79,7 +84,6 @@ export function ScanScreen({ navigation }) {
   const [location, setLocation] = useState('');
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
   const [result, setResult] = useState(null);
   const lastScanRef = useRef(0);
 
@@ -89,19 +93,16 @@ export function ScanScreen({ navigation }) {
     lastScanRef.current = now;
     setCameraActive(false);
     setScannedCode(event.data);
-    setError('');
   }
 
   function handleManualSubmit() {
     if (!manualCode.trim()) return;
     setCameraActive(false);
     setScannedCode(manualCode.trim());
-    setError('');
   }
 
   async function handleConfirmSubmit() {
     setSubmitting(true);
-    setError('');
     try {
       const scanRes = await submitScan({
         vtpCode: scannedCode,
@@ -115,13 +116,13 @@ export function ScanScreen({ navigation }) {
       let orderInfo = null;
       try {
         orderInfo = await getOrderDetail(scanRes.internalCode);
-      } catch {
-        // detail lookup nice-to-have
+      } catch (lookupErr) {
+        toast.error(lookupErr.message || 'Đã ghi nhận quét, nhưng không tải được thông tin đơn');
       }
 
       setResult({ ...scanRes, order: orderInfo });
     } catch (err) {
-      setError(err.message || 'Quét mã thất bại');
+      toast.error(err.message || 'Quét mã thất bại');
     } finally {
       setSubmitting(false);
     }
@@ -129,12 +130,11 @@ export function ScanScreen({ navigation }) {
 
   async function handleLookupOnly() {
     setSubmitting(true);
-    setError('');
     try {
       const orderInfo = await getOrderDetail(scannedCode);
       setResult({ lookupOnly: true, order: orderInfo });
     } catch (err) {
-      setError(err.message || 'Không tìm thấy đơn hàng');
+      toast.error(err.message || 'Không tìm thấy đơn hàng');
     } finally {
       setSubmitting(false);
     }
@@ -146,7 +146,6 @@ export function ScanScreen({ navigation }) {
     setLocation('');
     setNote('');
     setResult(null);
-    setError('');
     setCameraActive(true);
   }
 
@@ -156,7 +155,7 @@ export function ScanScreen({ navigation }) {
   if (result) {
     const order = result.order;
     return (
-      <ScrollView style={styles.bg} contentContainerStyle={styles.pad}>
+      <ScrollView style={styles.bg} contentContainerStyle={[styles.pad, { paddingTop: insets.top + 16 }]}>
         <StatusBar barStyle="dark-content" backgroundColor="#f2f4f8" />
 
         {/* Hero card */}
@@ -245,7 +244,16 @@ export function ScanScreen({ navigation }) {
   ══════════════════════════════════════ */
   if (scannedCode) {
     return (
-      <ScrollView style={styles.bg} contentContainerStyle={styles.pad}>
+      <KeyboardAvoidingView
+        style={styles.bg}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={insets.top}
+      >
+      <ScrollView
+        style={styles.bg}
+        contentContainerStyle={[styles.pad, { paddingTop: insets.top + 16 }]}
+        keyboardShouldPersistTaps="handled"
+      >
         <StatusBar barStyle="dark-content" backgroundColor="#f2f4f8" />
 
         <View style={styles.section}>
@@ -292,8 +300,6 @@ export function ScanScreen({ navigation }) {
           />
         </View>
 
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-
         <TouchableOpacity
           style={[styles.btnPrimary, submitting && { opacity: 0.7 }]}
           onPress={handleConfirmSubmit}
@@ -318,6 +324,7 @@ export function ScanScreen({ navigation }) {
           <Text style={styles.btnLinkText}>Hủy, quét lại</Text>
         </TouchableOpacity>
       </ScrollView>
+      </KeyboardAvoidingView>
     );
   }
 
@@ -329,7 +336,7 @@ export function ScanScreen({ navigation }) {
       <StatusBar barStyle="dark-content" backgroundColor="#f2f4f8" />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <View style={styles.headerBrand}>
           <View style={styles.headerIcon}>
             <Text style={styles.headerIconText}>V</Text>
@@ -385,7 +392,7 @@ export function ScanScreen({ navigation }) {
       )}
 
       {/* Manual input footer */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: Math.max(16, insets.bottom + 6) }]}>
         <TextInput
           style={styles.footerInput}
           value={manualCode}
@@ -496,7 +503,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     padding: 14,
-    paddingBottom: Platform.OS === 'ios' ? 28 : 16,
     backgroundColor: '#1a1f36',
   },
   footerInput: {
@@ -568,6 +574,7 @@ const styles = StyleSheet.create({
   /* Event type chips */
   chipRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
     padding: 14,
   },
@@ -595,19 +602,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     fontSize: 14,
     color: '#1a1f36',
-  },
-
-  /* Error */
-  error: {
-    color: '#e53e3e',
-    backgroundColor: '#fff0f0',
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 10,
-    fontSize: 13,
-    textAlign: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(229,62,62,0.2)',
   },
 
   /* Result hero */

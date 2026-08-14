@@ -9,7 +9,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getScanHistory } from '../api/scans';
+import { useToast } from '../ui/Toast';
 
 const PAGE_SIZE = 20;
 const BLUE = '#2f6cf6';
@@ -69,25 +71,28 @@ function eventLabel(type) {
 }
 
 export function HistoryScreen() {
+  const toast = useToast();
+  const insets = useSafeAreaInsets();
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState('');
 
-  const load = useCallback(async (targetPage, append) => {
-    try {
-      const res = await getScanHistory({ page: targetPage, limit: PAGE_SIZE });
-      setTotal(res.total);
-      setItems((prev) => (append ? [...prev, ...res.items] : res.items));
-      setPage(targetPage);
-      setError('');
-    } catch (err) {
-      setError(err.message || 'Không tải được lịch sử quét');
-    }
-  }, []);
+  const load = useCallback(
+    async (targetPage, append) => {
+      try {
+        const res = await getScanHistory({ page: targetPage, limit: PAGE_SIZE });
+        setTotal(res.total);
+        setItems((prev) => (append ? [...prev, ...res.items] : res.items));
+        setPage(targetPage);
+      } catch (err) {
+        toast.error(err.message || 'Không tải được lịch sử quét');
+      }
+    },
+    [toast]
+  );
 
   useEffect(() => {
     setLoading(true);
@@ -120,14 +125,12 @@ export function HistoryScreen() {
     <View style={styles.container} testID="history-screen">
       <StatusBar barStyle="dark-content" backgroundColor="#f2f4f8" />
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-
       <FlatList
         data={items}
         keyExtractor={(item, index) =>
           `${item.order?.internalCode || 'x'}-${item.eventTime}-${index}`
         }
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { paddingBottom: Math.max(40, insets.bottom + 24) }]}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={BLUE} />
         }
@@ -172,17 +175,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f2f4f8' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f2f4f8' },
   listContent: { padding: 14, paddingBottom: 40 },
-
-  error: {
-    color: '#e53e3e',
-    backgroundColor: '#fff0f0',
-    padding: 12,
-    margin: 14,
-    borderRadius: 10,
-    fontSize: 13,
-    borderWidth: 1,
-    borderColor: 'rgba(229,62,62,0.2)',
-  },
 
   emptyWrap: { alignItems: 'center', paddingTop: 60 },
   emptyText: { fontSize: 14, color: '#9ca3b8' },

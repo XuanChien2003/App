@@ -10,25 +10,26 @@ import {
   View,
 } from 'react-native';
 import { useAuth } from '../auth/AuthContext';
+import { useToast } from '../ui/Toast';
 
 export function LoginScreen() {
   const { login } = useAuth();
+  const toast = useToast();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit() {
-    setError('');
     if (!username || !password) {
-      setError('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu');
+      toast.error('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu');
       return;
     }
     setSubmitting(true);
     try {
-      await login(username, password);
+      const loggedInUser = await login(username, password);
+      toast.success(`Xin chào, ${loggedInUser?.displayName || loggedInUser?.username || ''}`);
     } catch (err) {
-      setError(err.message || 'Đăng nhập thất bại');
+      toast.error(err.message || 'Đăng nhập thất bại');
     } finally {
       setSubmitting(false);
     }
@@ -71,8 +72,6 @@ export function LoginScreen() {
           autoCapitalize="none"
           testID="password-input"
         />
-
-        {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <TouchableOpacity
           style={[styles.button, submitting && styles.buttonDisabled]}
@@ -161,16 +160,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     fontSize: 15,
     color: '#1a1f36',
-  },
-
-  error: {
-    color: '#e53e3e',
-    backgroundColor: '#fff0f0',
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 14,
-    fontSize: 13,
-    textAlign: 'center',
   },
 
   button: {
