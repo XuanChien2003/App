@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getScanHistory } from '../api/scans';
 import { useToast } from '../ui/Toast';
@@ -94,10 +95,15 @@ export function HistoryScreen() {
     [toast]
   );
 
-  useEffect(() => {
-    setLoading(true);
-    load(1, false).finally(() => setLoading(false));
-  }, [load]);
+  // useFocusEffect (not useEffect) so History re-fetches every time it gains focus - the screen
+  // stays mounted in the stack navigator, so a plain mount-only effect would keep showing
+  // whatever list was loaded the first time, missing scans made since the last visit.
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      load(1, false).finally(() => setLoading(false));
+    }, [load])
+  );
 
   async function handleRefresh() {
     setRefreshing(true);
