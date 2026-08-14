@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -126,6 +127,19 @@ export function ScanScreen({ navigation }) {
     }
   }
 
+  async function handleLookupOnly() {
+    setSubmitting(true);
+    setError('');
+    try {
+      const orderInfo = await getOrderDetail(scannedCode);
+      setResult({ lookupOnly: true, order: orderInfo });
+    } catch (err) {
+      setError(err.message || 'Không tìm thấy đơn hàng');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   function handleScanAgain() {
     setScannedCode(null);
     setManualCode('');
@@ -147,28 +161,40 @@ export function ScanScreen({ navigation }) {
 
         {/* Hero card */}
         <View style={styles.heroCard}>
-          <Text style={styles.heroCode}>{result.internalCode}</Text>
-          <View style={[styles.resultBanner, { backgroundColor: result.idempotent ? '#eef1f7' : '#e2f9ee' }]}>
-            <Text style={[styles.resultBannerText, { color: result.idempotent ? '#5a6480' : '#057a3e' }]}>
-              {result.idempotent ? '✓ Đã ghi nhận trước đó' : '✓ Quét thành công'}
+          <Text style={styles.heroCode}>{result.order?.internalCode || result.internalCode}</Text>
+          <View
+            style={[
+              styles.resultBanner,
+              { backgroundColor: result.lookupOnly ? '#e8f0ff' : result.idempotent ? '#eef1f7' : '#e2f9ee' },
+            ]}
+          >
+            <Text
+              style={[
+                styles.resultBannerText,
+                { color: result.lookupOnly ? BLUE : result.idempotent ? '#5a6480' : '#057a3e' },
+              ]}
+            >
+              {result.lookupOnly ? '🔍 Đã tra cứu (không ghi log)' : result.idempotent ? '✓ Đã ghi nhận trước đó' : '✓ Quét thành công'}
             </Text>
           </View>
         </View>
 
-        {/* Thông tin sự kiện */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>THÔNG TIN SỰ KIỆN</Text>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Loại sự kiện</Text>
-            <Text style={styles.infoValue}>{result.eventType}</Text>
+        {/* Thông tin sự kiện (chỉ hiện khi có ghi log quét) */}
+        {!result.lookupOnly && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>THÔNG TIN SỰ KIỆN</Text>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Loại sự kiện</Text>
+              <Text style={styles.infoValue}>{result.eventType}</Text>
+            </View>
+            <View style={[styles.infoRow, styles.infoRowLast]}>
+              <Text style={styles.infoLabel}>Thời gian</Text>
+              <Text style={styles.infoValue}>
+                {new Date(result.eventTime).toLocaleString('vi-VN')}
+              </Text>
+            </View>
           </View>
-          <View style={[styles.infoRow, styles.infoRowLast]}>
-            <Text style={styles.infoLabel}>Thời gian</Text>
-            <Text style={styles.infoValue}>
-              {new Date(result.eventTime).toLocaleString('vi-VN')}
-            </Text>
-          </View>
-        </View>
+        )}
 
         {/* Thông tin đơn hàng */}
         {order && (
@@ -279,6 +305,14 @@ export function ScanScreen({ navigation }) {
           ) : (
             <Text style={styles.btnPrimaryText}>Xác nhận</Text>
           )}
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.btnLink}
+          onPress={handleLookupOnly}
+          disabled={submitting}
+          testID="lookup-only-button"
+        >
+          <Text style={styles.btnLinkText}>Chỉ xem thông tin (không ghi log)</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.btnLink} onPress={handleScanAgain}>
           <Text style={styles.btnLinkText}>Hủy, quét lại</Text>
