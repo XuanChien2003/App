@@ -1,10 +1,12 @@
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// 10.0.2.2 is a special address that only resolves to the host machine from inside the
-// Android emulator - it can never work in a real browser, so auto-correct it there.
+// EXPO_PUBLIC_* vars only get inlined at build time from whatever env the *builder* sees (local
+// .env for `expo start`/`expo export`, eas.json's build.<profile>.env for EAS Build) - a build
+// that doesn't see it at all falls back here, so this must be a real reachable backend, never
+// the emulator-only 10.0.2.2, or every such build silently breaks on physical devices.
 function resolveApiBaseUrl() {
-  const configured = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://10.0.2.2:8080/api';
+  const configured = process.env.EXPO_PUBLIC_API_BASE_URL || 'https://don-be.onrender.com/api';
   if (Platform.OS === 'web' && configured.includes('10.0.2.2')) {
     return configured.replace('10.0.2.2', 'localhost');
   }
