@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -338,10 +339,8 @@ export function ScanScreen({ navigation }) {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <View style={styles.headerBrand}>
-          <View style={styles.headerIcon}>
-            <Text style={styles.headerIconText}>V</Text>
-          </View>
-          <Text style={styles.headerTitle}>VTP Scanner</Text>
+          <Image source={require('../../assets/icon.png')} style={styles.headerIcon} />
+          <Text style={styles.headerTitle}>New Horizon Scanner</Text>
         </View>
         <View style={styles.headerActions}>
           <TouchableOpacity onPress={() => navigation.navigate('History')} style={styles.headerBtn}>
@@ -432,11 +431,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 8,
-    backgroundColor: BLUE,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  headerIconText: { color: '#fff', fontWeight: '800', fontSize: 13 },
   headerTitle: { fontSize: 15, fontWeight: '700', color: '#1a1f36', letterSpacing: -0.2 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   headerBtn: {

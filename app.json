@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "NXC Scanner",
+    "name": "New Horizon Scanner",
     "slug": "nxc-scanner",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -12,7 +12,7 @@
     "android": {
       "package": "com.nxc.scanner",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -28,7 +28,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Cho phép NXC Scanner truy cập camera để quét mã vạch/QR đơn hàng.",
+          "cameraPermission": "Cho phép New Horizon Scanner truy cập camera để quét mã vạch/QR đơn hàng.",
           "microphonePermission": false,
           "recordAudioAndroid": false
         }

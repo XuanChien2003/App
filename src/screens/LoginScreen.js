@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -42,12 +43,10 @@ export function LoginScreen() {
     >
       {/* Logo */}
       <View style={styles.logoWrap}>
-        <View style={styles.logo}>
-          <Text style={styles.logoText}>V</Text>
-        </View>
+        <Image source={require('../../assets/icon.png')} style={styles.logo} />
       </View>
 
-      <Text style={styles.title}>VTP Scanner</Text>
+      <Text style={styles.title}>New Horizon Scanner</Text>
       <Text style={styles.subtitle}>Đăng nhập để quét mã đơn hàng</Text>
 
       <View style={styles.formCard}>
@@ -109,20 +108,11 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 20,
-    backgroundColor: BLUE,
-    alignItems: 'center',
-    justifyContent: 'center',
     shadowColor: BLUE,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 16,
     elevation: 10,
-  },
-  logoText: {
-    fontSize: 34,
-    fontWeight: '800',
-    color: '#fff',
-    letterSpacing: -1,
   },
 
   title: {
