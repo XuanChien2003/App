@@ -25,6 +25,16 @@ const EVENT_TYPES = [
   { value: 'ban_giao', label: 'Bàn giao' },
 ];
 
+const EVENT_LABELS = {
+  nhap_kho: 'Nhập kho',
+  xuat_kho: 'Xuất kho',
+  ban_giao: 'Bàn giao',
+  tra_cuu: 'Tra cứu',
+};
+function eventLabel(type) {
+  return EVENT_LABELS[type] || type || '-';
+}
+
 const BLUE = '#2f6cf6';
 const GREEN = '#0ea865';
 const ORANGE = '#f59e0b';
@@ -133,7 +143,22 @@ export function ScanScreen({ navigation }) {
     setSubmitting(true);
     try {
       const orderInfo = await getOrderDetail(scannedCode);
-      setResult({ lookupOnly: true, order: orderInfo });
+
+      // Log the lookup itself into scan history too - vtpCode (not internalCode, which the
+      // manual input may hold) since /scans only resolves orders by vtpCode.
+      let scanRes = null;
+      try {
+        scanRes = await submitScan({
+          vtpCode: orderInfo.vtpCode,
+          eventType: 'tra_cuu',
+          eventTime: new Date().toISOString(),
+          requestId: generateRequestId(),
+        });
+      } catch (logErr) {
+        toast.error(logErr.message || 'Đã tra cứu, nhưng không lưu được vào lịch sử');
+      }
+
+      setResult({ ...scanRes, lookupOnly: true, order: orderInfo });
     } catch (err) {
       toast.error(err.message || 'Không tìm thấy đơn hàng');
     } finally {
@@ -155,6 +180,9 @@ export function ScanScreen({ navigation }) {
   ══════════════════════════════════════ */
   if (result) {
     const order = result.order;
+    // Every result now gets logged to history (including lookup-only, as `tra_cuu`) - `logged`
+    // is false only if the log write itself failed after a successful lookup (see handleLookupOnly).
+    const logged = Boolean(result.eventType);
     return (
       <ScrollView style={styles.bg} contentContainerStyle={[styles.pad, { paddingTop: insets.top + 16 }]}>
         <StatusBar barStyle="dark-content" backgroundColor="#f2f4f8" />
@@ -165,27 +193,33 @@ export function ScanScreen({ navigation }) {
           <View
             style={[
               styles.resultBanner,
-              { backgroundColor: result.lookupOnly ? '#e8f0ff' : result.idempotent ? '#eef1f7' : '#e2f9ee' },
+              { backgroundColor: !logged ? '#e8f0ff' : result.idempotent ? '#eef1f7' : '#e2f9ee' },
             ]}
           >
             <Text
               style={[
                 styles.resultBannerText,
-                { color: result.lookupOnly ? BLUE : result.idempotent ? '#5a6480' : '#057a3e' },
+                { color: !logged ? BLUE : result.idempotent ? '#5a6480' : '#057a3e' },
               ]}
             >
-              {result.lookupOnly ? '🔍 Đã tra cứu (không ghi log)' : result.idempotent ? '✓ Đã ghi nhận trước đó' : '✓ Quét thành công'}
+              {!logged
+                ? '🔍 Đã tra cứu (chưa lưu được lịch sử)'
+                : result.idempotent
+                ? '✓ Đã ghi nhận trước đó'
+                : result.lookupOnly
+                ? '🔍 Đã tra cứu và lưu lịch sử'
+                : '✓ Quét thành công'}
             </Text>
           </View>
         </View>
 
-        {/* Thông tin sự kiện (chỉ hiện khi có ghi log quét) */}
-        {!result.lookupOnly && (
+        {/* Thông tin sự kiện (chỉ hiện khi lưu lịch sử thành công) */}
+        {logged && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>THÔNG TIN SỰ KIỆN</Text>
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Loại sự kiện</Text>
-              <Text style={styles.infoValue}>{result.eventType}</Text>
+              <Text style={styles.infoValue}>{eventLabel(result.eventType)}</Text>
             </View>
             <View style={[styles.infoRow, styles.infoRowLast]}>
               <Text style={styles.infoLabel}>Thời gian</Text>

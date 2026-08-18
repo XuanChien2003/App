@@ -66,6 +66,7 @@ const EVENT_LABELS = {
   nhap_kho: 'Nhập kho',
   xuat_kho: 'Xuất kho',
   ban_giao: 'Bàn giao',
+  tra_cuu: 'Tra cứu',
 };
 function eventLabel(type) {
   return EVENT_LABELS[type] || type || '-';
