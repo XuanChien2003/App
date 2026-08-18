@@ -48,11 +48,19 @@ export async function apiRequest(path, options = {}) {
   const token = await getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+  let res;
+  try {
+    res = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  } catch {
+    // fetch() itself throws (network down, DNS failure) before any HTTP response exists - the
+    // runtime's own message here is English and would otherwise leak past every caller's
+    // `err.message || <Vietnamese fallback>` pattern.
+    throw new Error('Không kết nối được tới máy chủ, vui lòng kiểm tra mạng và thử lại');
+  }
 
   if (res.status === 401 && unauthorizedHandler) {
     unauthorizedHandler();
