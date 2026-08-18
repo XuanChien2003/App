@@ -72,7 +72,7 @@ function eventLabel(type) {
   return EVENT_LABELS[type] || type || '-';
 }
 
-export function HistoryScreen() {
+export function HistoryScreen({ navigation }) {
   const toast = useToast();
   const insets = useSafeAreaInsets();
   const [items, setItems] = useState([]);
@@ -154,7 +154,11 @@ export function HistoryScreen() {
           ) : null
         }
         renderItem={({ item }) => (
-          <View style={styles.row}>
+          <TouchableOpacity
+            style={styles.row}
+            activeOpacity={0.6}
+            onPress={() => navigation.navigate('HistoryDetail', { item })}
+          >
             {/* Left: code + receiver */}
             <View style={styles.rowLeft}>
               <Text style={styles.rowCode}>
@@ -171,7 +175,7 @@ export function HistoryScreen() {
               <StatusBadge status={item.order?.currentStatus} />
               <Text style={styles.rowEventType}>{eventLabel(item.eventType)}</Text>
             </View>
-          </View>
+          </TouchableOpacity>
         )}
       />
     </View>

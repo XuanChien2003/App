@@ -5,6 +5,7 @@ import { useAuth } from '../auth/AuthContext';
 import { LoginScreen } from '../screens/LoginScreen';
 import { ScanScreen } from '../screens/ScanScreen';
 import { HistoryScreen } from '../screens/HistoryScreen';
+import { HistoryDetailScreen } from '../screens/HistoryDetailScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 
 const Stack = createNativeStackNavigator();
@@ -43,6 +44,11 @@ export function RootNavigator() {
               name="History"
               component={HistoryScreen}
               options={{ title: 'Lịch sử quét' }}
+            />
+            <Stack.Screen
+              name="HistoryDetail"
+              component={HistoryDetailScreen}
+              options={{ title: 'Chi tiết lượt quét' }}
             />
             <Stack.Screen
               name="Profile"
