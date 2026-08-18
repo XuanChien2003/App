@@ -18,6 +18,7 @@ export function LoginScreen() {
   const toast = useToast();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit() {
@@ -61,16 +62,30 @@ export function LoginScreen() {
           testID="username-input"
         />
 
+        <View style={styles.passwordField}>
         <TextInput
-          style={[styles.input, { marginTop: 12 }]}
+          style={styles.passwordInput}
           value={password}
           onChangeText={setPassword}
           placeholder="Mật khẩu"
           placeholderTextColor="#aab0c2"
-          secureTextEntry
+          secureTextEntry={!passwordVisible}
           autoCapitalize="none"
+          autoCorrect={false}
           testID="password-input"
         />
+        <TouchableOpacity
+          style={styles.passwordToggle}
+          onPress={() => setPasswordVisible((visible) => !visible)}
+          accessibilityRole="button"
+          accessibilityLabel={passwordVisible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+          accessibilityState={{ selected: passwordVisible }}
+          hitSlop={8}
+          testID="password-visibility-toggle"
+        >
+          <Text style={styles.passwordToggleIcon}>{passwordVisible ? '◉' : '◉̸'}</Text>
+        </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           style={[styles.button, submitting && styles.buttonDisabled]}
@@ -150,6 +165,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     fontSize: 15,
     color: '#1a1f36',
+  },
+  passwordField: {
+    marginTop: 12,
+    position: 'relative',
+  },
+  passwordInput: {
+    height: 46,
+    backgroundColor: '#f7f9fc',
+    borderWidth: 1.5,
+    borderColor: '#e4e8f0',
+    borderRadius: 10,
+    paddingLeft: 14,
+    paddingRight: 48,
+    fontSize: 15,
+    color: '#1a1f36',
+  },
+  passwordToggle: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    width: 46,
+    height: 46,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  passwordToggleIcon: {
+    color: '#667085',
+    fontSize: 22,
   },
 
   button: {
