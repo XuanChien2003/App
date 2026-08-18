@@ -5,6 +5,7 @@ import { useAuth } from '../auth/AuthContext';
 import { LoginScreen } from '../screens/LoginScreen';
 import { ScanScreen } from '../screens/ScanScreen';
 import { HistoryScreen } from '../screens/HistoryScreen';
+import { ProfileScreen } from '../screens/ProfileScreen';
 
 const Stack = createNativeStackNavigator();
 const BLUE = '#2f6cf6';
@@ -42,6 +43,11 @@ export function RootNavigator() {
               name="History"
               component={HistoryScreen}
               options={{ title: 'Lịch sử quét' }}
+            />
+            <Stack.Screen
+              name="Profile"
+              component={ProfileScreen}
+              options={{ title: 'Tài khoản' }}
             />
           </>
         ) : (

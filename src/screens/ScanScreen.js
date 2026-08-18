@@ -84,7 +84,7 @@ const badgeStyles = StyleSheet.create({
 
 /* ─── Màn hình QUÉT MÃ chính ─── */
 export function ScanScreen({ navigation }) {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const toast = useToast();
   const insets = useSafeAreaInsets();
   const [permission, requestPermission] = useCameraPermissions();
@@ -380,7 +380,7 @@ export function ScanScreen({ navigation }) {
           <TouchableOpacity onPress={() => navigation.navigate('History')} style={styles.headerBtn}>
             <Text style={styles.headerBtnText}>Lịch sử</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={logout} testID="logout-button" style={styles.avatarBtn}>
+          <TouchableOpacity onPress={() => navigation.navigate('Profile')} testID="profile-button" style={styles.avatarBtn}>
             <Text style={styles.avatarText}>
               {(user?.displayName || user?.username || '?').charAt(0).toUpperCase()}
             </Text>
