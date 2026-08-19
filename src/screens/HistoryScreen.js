@@ -135,7 +135,7 @@ export function HistoryScreen({ navigation }) {
       <FlatList
         data={items}
         keyExtractor={(item, index) =>
-          `${item.order?.internalCode || 'x'}-${item.eventTime}-${index}`
+          `${item.order?.vtpCode || 'x'}-${item.eventTime}-${index}`
         }
         contentContainerStyle={[styles.listContent, { paddingBottom: Math.max(40, insets.bottom + 24) }]}
         refreshControl={
@@ -162,7 +162,7 @@ export function HistoryScreen({ navigation }) {
             {/* Left: code + receiver */}
             <View style={styles.rowLeft}>
               <Text style={styles.rowCode}>
-                {item.order?.internalCode || '-'}
+                {item.order?.vtpCode || '-'}
               </Text>
               {item.order?.receiverName ? (
                 <Text style={styles.rowReceiver}>{item.order.receiverName}</Text>

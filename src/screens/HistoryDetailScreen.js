@@ -60,12 +60,12 @@ export function HistoryDetailScreen({ route }) {
   useEffect(() => {
     let active = true;
     async function load() {
-      if (!item?.order?.internalCode) {
+      if (!item?.order?.vtpCode) {
         setLoading(false);
         return;
       }
       try {
-        const detail = await getOrderDetail(item.order.internalCode);
+        const detail = await getOrderDetail(item.order.vtpCode);
         if (active) setOrder(detail);
       } catch (err) {
         if (active) toast.error(err.message || 'Không tải được thông tin đơn');
@@ -78,7 +78,7 @@ export function HistoryDetailScreen({ route }) {
       active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item?.order?.internalCode]);
+  }, [item?.order?.vtpCode]);
 
   if (!item) {
     return (
@@ -95,7 +95,7 @@ export function HistoryDetailScreen({ route }) {
 
       {/* Hero card */}
       <View style={styles.heroCard}>
-        <Text style={styles.heroCode}>{item.order?.internalCode || '-'}</Text>
+        <Text style={styles.heroCode}>{item.order?.vtpCode || '-'}</Text>
         <View style={styles.resultBanner}>
           <Text style={styles.resultBannerText}>{eventLabel(item.eventType)}</Text>
         </View>

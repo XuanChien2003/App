@@ -153,7 +153,7 @@ export function ScanScreen({ navigation }) {
 
       let orderInfo = null;
       try {
-        orderInfo = await getOrderDetail(scanRes.internalCode);
+        orderInfo = await getOrderDetail(scanRes.vtpCode);
       } catch (lookupErr) {
         toast.error(lookupErr.message || 'Đã ghi nhận quét, nhưng không tải được thông tin đơn');
       }
@@ -171,12 +171,11 @@ export function ScanScreen({ navigation }) {
     try {
       const orderInfo = await getOrderDetail(scannedCode);
 
-      // Log the lookup itself into scan history too - vtpCode (not internalCode, which the
-      // manual input may hold) since /scans only resolves orders by vtpCode.
+      // Log the lookup itself into scan history too.
       let scanRes = null;
       try {
         scanRes = await submitScan({
-          vtpCode: orderInfo.vtpCode,
+          vtpCode: scannedCode,
           eventType: 'tra_cuu',
           eventTime: new Date().toISOString(),
           requestId: generateRequestId(),
@@ -216,7 +215,7 @@ export function ScanScreen({ navigation }) {
 
         {/* Hero card */}
         <View style={styles.heroCard}>
-          <Text style={styles.heroCode}>{result.order?.internalCode || result.internalCode}</Text>
+          <Text style={styles.heroCode}>{result.order?.vtpCode || result.vtpCode}</Text>
           <View
             style={[
               styles.resultBanner,
