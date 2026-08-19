@@ -18,9 +18,7 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
+        "android.permission.CAMERA"
       ]
     },
     "web": {
@@ -33,12 +31,6 @@
           "cameraPermission": "Cho phép New Horizon Scanner truy cập camera để quét mã vạch/QR đơn hàng.",
           "microphonePermission": false,
           "recordAudioAndroid": false
-        }
-      ],
-      [
-        "expo-location",
-        {
-          "locationAlwaysAndWhenInUsePermission": "Cho phép New Horizon Scanner truy cập vị trí để xác nhận bạn đang ở trong kho khi ghi nhận nhập/xuất kho."
         }
       ]
     ],
