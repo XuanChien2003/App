@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../auth/AuthContext';
 import { submitScan } from '../api/scans';
@@ -24,6 +25,10 @@ const EVENT_TYPES = [
   { value: 'xuat_kho', label: 'Xuất kho' },
   { value: 'ban_giao', label: 'Bàn giao' },
 ];
+
+// Phải đang trong kho mới quét được 2 loại này (geofence, khớp BE - xem scan.service.js).
+// Bàn giao không bị giới hạn vì có thể diễn ra ngoài kho (cổng, đang vận chuyển).
+const WAREHOUSE_LOCKED_EVENT_TYPES = ['nhap_kho', 'xuat_kho'];
 
 const EVENT_LABELS = {
   nhap_kho: 'Nhập kho',
@@ -115,6 +120,26 @@ export function ScanScreen({ navigation }) {
   async function handleConfirmSubmit() {
     setSubmitting(true);
     try {
+      let lat;
+      let lng;
+      if (WAREHOUSE_LOCKED_EVENT_TYPES.includes(eventType)) {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          toast.error('Cần cấp quyền vị trí để ghi nhận nhập/xuất kho');
+          setSubmitting(false);
+          return;
+        }
+        try {
+          const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+          lat = position.coords.latitude;
+          lng = position.coords.longitude;
+        } catch {
+          toast.error('Không lấy được vị trí GPS, vui lòng bật định vị và thử lại');
+          setSubmitting(false);
+          return;
+        }
+      }
+
       const scanRes = await submitScan({
         vtpCode: scannedCode,
         eventType,
@@ -122,6 +147,8 @@ export function ScanScreen({ navigation }) {
         note: note || undefined,
         eventTime: new Date().toISOString(),
         requestId: generateRequestId(),
+        lat,
+        lng,
       });
 
       let orderInfo = null;

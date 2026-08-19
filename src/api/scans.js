@@ -1,9 +1,9 @@
 import { apiRequest } from './client';
 
-export function submitScan({ vtpCode, eventType, location, note, eventTime, requestId }) {
+export function submitScan({ vtpCode, eventType, location, note, eventTime, requestId, lat, lng }) {
   return apiRequest('/scans', {
     method: 'POST',
-    body: { vtpCode, eventType, location, note, eventTime, requestId },
+    body: { vtpCode, eventType, location, note, eventTime, requestId, lat, lng },
   });
 }
 
