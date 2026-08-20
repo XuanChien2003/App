@@ -352,7 +352,7 @@ export function ScanScreen({ navigation }) {
           disabled={submitting}
           testID="lookup-only-button"
         >
-          <Text style={styles.btnLinkText}>Chỉ xem thông tin (không ghi log)</Text>
+          <Text style={styles.btnLinkText}>Chỉ xem thông tin</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.btnLink} onPress={handleScanAgain}>
           <Text style={styles.btnLinkText}>Hủy, quét lại</Text>
