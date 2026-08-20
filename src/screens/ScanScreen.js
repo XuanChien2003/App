@@ -124,6 +124,15 @@ export function ScanScreen({ navigation }) {
         requestId: generateRequestId(),
       });
 
+      // Đã có bản ghi từ trước (chính tài khoản này) cho đúng mã + loại sự kiện này rồi - không
+      // phải lỗi, chỉ là không được ghi thêm lần nữa. Báo nhanh rồi quay lại quét, không cần hiện
+      // màn kết quả đầy đủ.
+      if (scanRes.idempotent) {
+        toast.error(`Đơn ${scanRes.vtpCode} đã ghi nhận "${eventLabel(eventType)}" trước đó, không thể quét lại`);
+        handleScanAgain();
+        return;
+      }
+
       let orderInfo = null;
       try {
         orderInfo = await getOrderDetail(scanRes.vtpCode);
@@ -143,21 +152,7 @@ export function ScanScreen({ navigation }) {
     setSubmitting(true);
     try {
       const orderInfo = await getOrderDetail(scannedCode);
-
-      // Log the lookup itself into scan history too.
-      let scanRes = null;
-      try {
-        scanRes = await submitScan({
-          vtpCode: scannedCode,
-          eventType: 'tra_cuu',
-          eventTime: new Date().toISOString(),
-          requestId: generateRequestId(),
-        });
-      } catch (logErr) {
-        toast.error(logErr.message || 'Đã tra cứu, nhưng không lưu được vào lịch sử');
-      }
-
-      setResult({ ...scanRes, lookupOnly: true, order: orderInfo });
+      setResult({ lookupOnly: true, order: orderInfo });
     } catch (err) {
       toast.error(err.message || 'Không tìm thấy đơn hàng');
     } finally {
@@ -179,9 +174,6 @@ export function ScanScreen({ navigation }) {
   ══════════════════════════════════════ */
   if (result) {
     const order = result.order;
-    // Every result now gets logged to history (including lookup-only, as `tra_cuu`) - `logged`
-    // is false only if the log write itself failed after a successful lookup (see handleLookupOnly).
-    const logged = Boolean(result.eventType);
     return (
       <ScrollView style={styles.bg} contentContainerStyle={[styles.pad, { paddingTop: insets.top + 16 }]}>
         <StatusBar barStyle="dark-content" backgroundColor="#f2f4f8" />
@@ -189,31 +181,15 @@ export function ScanScreen({ navigation }) {
         {/* Hero card */}
         <View style={styles.heroCard}>
           <Text style={styles.heroCode}>{result.order?.vtpCode || result.vtpCode}</Text>
-          <View
-            style={[
-              styles.resultBanner,
-              { backgroundColor: !logged ? '#e8f0ff' : result.idempotent ? '#eef1f7' : '#e2f9ee' },
-            ]}
-          >
-            <Text
-              style={[
-                styles.resultBannerText,
-                { color: !logged ? BLUE : result.idempotent ? '#5a6480' : '#057a3e' },
-              ]}
-            >
-              {!logged
-                ? '🔍 Đã tra cứu (chưa lưu được lịch sử)'
-                : result.idempotent
-                ? '✓ Đã ghi nhận trước đó'
-                : result.lookupOnly
-                ? '🔍 Đã tra cứu và lưu lịch sử'
-                : '✓ Quét thành công'}
+          <View style={[styles.resultBanner, { backgroundColor: result.lookupOnly ? '#e8f0ff' : '#e2f9ee' }]}>
+            <Text style={[styles.resultBannerText, { color: result.lookupOnly ? BLUE : '#057a3e' }]}>
+              {result.lookupOnly ? '🔍 Đã tra cứu (không ghi log)' : '✓ Quét thành công'}
             </Text>
           </View>
         </View>
 
-        {/* Thông tin sự kiện (chỉ hiện khi lưu lịch sử thành công) */}
-        {logged && (
+        {/* Thông tin sự kiện (chỉ hiện khi có ghi log quét) */}
+        {!result.lookupOnly && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>THÔNG TIN SỰ KIỆN</Text>
             <View style={styles.infoRow}>
