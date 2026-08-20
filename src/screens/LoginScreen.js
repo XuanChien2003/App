@@ -2,12 +2,14 @@ import { useState } from 'react';
 import {
   ActivityIndicator,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import { useAuth } from '../auth/AuthContext';
@@ -39,9 +41,11 @@ export function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <View style={styles.container}>
       {/* Logo */}
       <View style={styles.logoWrap}>
         <Image source={require('../../assets/icon.png')} style={styles.logo} />
@@ -100,6 +104,8 @@ export function LoginScreen() {
           )}
         </TouchableOpacity>
       </View>
+    </View>
+    </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }
@@ -107,6 +113,7 @@ export function LoginScreen() {
 const BLUE = '#2f6cf6';
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   container: {
     flex: 1,
     backgroundColor: '#f2f4f8',
