@@ -345,6 +345,7 @@ export function ScanScreen({ navigation }) {
      MAIN SCAN SCREEN
   ══════════════════════════════════════ */
   return (
+    <KeyboardAvoidingView style={styles.bg} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
     <View style={styles.bg}>
       <StatusBar barStyle="dark-content" backgroundColor="#f2f4f8" />
@@ -422,6 +423,7 @@ export function ScanScreen({ navigation }) {
       </View>
     </View>
     </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
