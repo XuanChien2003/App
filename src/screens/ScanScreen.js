@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -10,6 +11,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -107,6 +109,7 @@ export function ScanScreen({ navigation }) {
   }
 
   function handleManualSubmit() {
+    Keyboard.dismiss();
     if (!manualCode.trim()) return;
     setCameraActive(false);
     setScannedCode(manualCode.trim());
@@ -342,6 +345,7 @@ export function ScanScreen({ navigation }) {
      MAIN SCAN SCREEN
   ══════════════════════════════════════ */
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
     <View style={styles.bg}>
       <StatusBar barStyle="dark-content" backgroundColor="#f2f4f8" />
 
@@ -417,6 +421,7 @@ export function ScanScreen({ navigation }) {
         </TouchableOpacity>
       </View>
     </View>
+    </TouchableWithoutFeedback>
   );
 }
 
